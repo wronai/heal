@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "heal"
+version = "0.1.1"
+description = "A Python package for healing and wellness"
+readme = "README.md"
+requires-python = ">=3.8"
+license = "Apache-2.0"
+authors = [
+    {name = "Your Name", email = "your.email@example.com"},
+    "Tom Sapletta <tom@sapletta.com>",
+]
+dependencies = [
+    "litellm>=1.0.0",
+    "python-dotenv>=1.0.0",
+    "click>=8.0.0",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+keywords = ["health", "wellness", "healing", "llm", "shell", "fix"]
+
+[project.scripts]
+heal = "heal.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/yourusername/heal"
+Repository = "https://github.com/yourusername/heal"
+Issues = "https://github.com/yourusername/heal/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["heal*"]
+
+[tool.setuptools.package-data]
+heal = ["*.py", "*.txt", "*.md"]
