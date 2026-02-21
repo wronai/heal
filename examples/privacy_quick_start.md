@@ -7,7 +7,7 @@ Get started with privacy protection in 2 minutes.
 ### Option 1: Basic Protection (Included)
 
 ```bash
-pip install fixi
+pip install heal
 ```
 
 Provides regex-based masking for:
@@ -18,7 +18,7 @@ Provides regex-based masking for:
 ### Option 2: Full Protection (Recommended for Polish)
 
 ```bash
-pip install fixi[privacy]
+pip install heal[privacy]
 python -m spacy download pl_nask-0.0.5
 ```
 
@@ -157,7 +157,7 @@ Always review output before sending sensitive data.
 
 ```bash
 # Install full protection
-pip install fixi[privacy]
+pip install heal[privacy]
 python -m spacy download pl_nask-0.0.5
 
 # Check status

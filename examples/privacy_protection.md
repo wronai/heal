@@ -20,7 +20,7 @@ The `--anonymize` flag masks this data before sending it to the LLM provider.
 
 Heal includes basic regex-based masking by default:
 ```bash
-pip install fixi
+pip install heal
 ```
 
 This provides basic protection for:
@@ -34,7 +34,7 @@ This provides basic protection for:
 For comprehensive privacy protection using Polish NLP:
 ```bash
 # Install with privacy extras
-pip install fixi[privacy]
+pip install heal[privacy]
 
 # Download Polish SpaCy model
 python -m spacy download pl_nask-0.0.5
@@ -92,7 +92,7 @@ priv-masker installed: ✗
 SpaCy model loaded: ✗
 
 Privacy masking not available. Install with:
-    pip install fixi[privacy]
+    pip install heal[privacy]
     python -m spacy download pl_nask-0.0.5
 ```
 
@@ -323,7 +323,7 @@ For maximum security:
 
 **Solution:**
 ```bash
-pip install fixi[privacy]
+pip install heal[privacy]
 python -m spacy download pl_nask-0.0.5
 ```
 
@@ -415,7 +415,7 @@ your_command
 heal --anonymize
 
 # Install full privacy protection
-pip install fixi[privacy]
+pip install heal[privacy]
 python -m spacy download pl_nask-0.0.5
 
 # Create alias for convenience

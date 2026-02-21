@@ -3,8 +3,8 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "fixi"
-version = "0.1.19"
+name = "heal"
+version = "0.1.20"
 description = "A Python package for healing and wellness"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -46,7 +46,7 @@ privacy = [
 ]
 
 [project.scripts]
-fixi = "heal.cli:main"
+heal = "heal.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/yourusername/heal"

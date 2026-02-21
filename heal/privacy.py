@@ -56,7 +56,7 @@ class PrivacyMasker:
         """Get installation instructions for privacy masking."""
         if not PRIV_MASKER_AVAILABLE:
             return """Privacy masking not available. Install with:
-    pip install fixi[privacy]
+    pip install heal[privacy]
     python -m spacy download pl_nask-0.0.5"""
         elif not self.enabled:
             return """SpaCy model not installed. Install with:

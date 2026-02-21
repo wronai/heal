@@ -232,12 +232,12 @@ source /home/user/.heal/heal.bash
 
 1. **Check if installed:**
    ```bash
-   pip list | grep fixi
+   pip list | grep heal
    ```
 
 2. **Reinstall:**
    ```bash
-   pip install --upgrade fixi
+   pip install --upgrade heal
    ```
 
 3. **Check PATH:**
@@ -256,7 +256,7 @@ source /home/user/.heal/heal.bash
 
 **Solution:**
 ```bash
-pip install --upgrade fixi
+pip install --upgrade heal
 # or
 pip install -e ".[dev]"
 ```
@@ -345,7 +345,7 @@ Include:
 - Your provider and model (without API key)
 - Operating system
 - Python version: `python --version`
-- Heal version: `pip show fixi`
+- Heal version: `pip show heal`
 
 ## Quick Fixes Checklist
 
@@ -356,7 +356,7 @@ Include:
 - [ ] Try a different model
 - [ ] Check internet connection
 - [ ] Reconfigure: `heal config`
-- [ ] Reinstall: `pip install --upgrade fixi`
+- [ ] Reinstall: `pip install --upgrade heal`
 - [ ] Check bash integration: `source ~/.bashrc`
 
 ## Common Error Messages
@@ -368,5 +368,5 @@ Include:
 | "insufficient_quota" | Out of credits | Add credits to account |
 | "model not found" | Wrong model name | `heal config` → select valid model |
 | "No error input detected" | No piped input | Use `heal init` or pipe: `cmd 2>&1 \| heal` |
-| "heal: command not found" | Not installed | `pip install fixi` |
+| "heal: command not found" | Not installed | `pip install heal` |
 | "Connection refused" | Network issue | Check internet connection |

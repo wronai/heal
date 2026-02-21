@@ -1,3 +1,25 @@
+## [0.1.20] - 2026-02-21
+
+### Summary
+
+refactor(examples): configuration management system
+
+### Docs
+
+- docs: update getting_started.md
+- docs: update privacy_protection.md
+- docs: update privacy_quick_start.md
+- docs: update troubleshooting.md
+
+### Build
+
+- update pyproject.toml
+
+### Other
+
+- update heal/privacy.py
+
+
 ## [0.1.19] - 2026-02-21
 
 ### Summary

@@ -5,7 +5,7 @@ Complete guide to setting up and using heal for the first time.
 ## Installation
 
 ```bash
-pip install fixi
+pip install heal
 ```
 
 ## Step-by-Step Setup
@@ -272,9 +272,9 @@ heal > solution.txt
 Make sure heal is installed:
 
 ```bash
-pip install fixi
+pip install heal
 # or
-pip install --user fixi
+pip install --user heal
 ```
 
 Add to PATH if needed:
