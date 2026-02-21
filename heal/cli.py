@@ -258,8 +258,22 @@ def main(ctx):
 @main.command()
 @click.option('--model', help='Override the model')
 @click.option('--api-key', help='Override the API key')
-def fix(model, api_key):
+@click.option('--anonymize', is_flag=True, help='Anonymize sensitive data before sending to LLM')
+@click.option('--privacy-check', is_flag=True, help='Check privacy masking availability')
+def fix(model, api_key, anonymize, privacy_check):
     """Fix shell errors using LLM."""
+    # Check privacy status if requested
+    if privacy_check:
+        from .privacy import get_privacy_status
+        status = get_privacy_status()
+        click.echo("\n🔒 Privacy Masking Status\n")
+        click.echo(f"Available: {'✓' if status['available'] else '✗'}")
+        click.echo(f"priv-masker installed: {'✓' if status['priv_masker_installed'] else '✗'}")
+        click.echo(f"SpaCy model loaded: {'✓' if status['model_loaded'] else '✗'}")
+        if status['install_instructions']:
+            click.echo(f"\n{status['install_instructions']}")
+        return
+    
     ensure_config()
 
     if model:
@@ -279,6 +293,29 @@ def fix(model, api_key):
         click.echo("  your_command 2>&1 | heal fix")
         click.echo("  # Or install shell hook with: heal install")
         return
+
+    # Anonymize if requested
+    if anonymize:
+        from .privacy import anonymize_shell_output, get_privacy_status
+        status = get_privacy_status()
+        
+        if not status['available']:
+            click.echo("⚠️  Privacy masking not fully available.")
+            click.echo("   Using basic regex-based masking as fallback.")
+            if status['install_instructions']:
+                click.echo(f"\n   For full privacy protection:\n{status['install_instructions']}\n")
+        else:
+            click.echo("🔒 Anonymizing sensitive data...\n")
+        
+        error_output = anonymize_shell_output(
+            error_output,
+            enable_privacy=True,
+            mask_names=True,
+            mask_dates=False,  # Keep dates for context
+            mask_contacts=True,
+            mask_addresses=True,
+            mask_ids=True,
+        )
 
     prompt = f"""
 You are a CLI assistant that helps fix shell errors and command failures.

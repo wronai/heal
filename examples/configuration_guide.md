@@ -275,7 +275,7 @@ heal config
 
 Install dependencies:
 ```bash
-pip install fixi
+pip install heal
 # or
 pip install -e ".[dev]"
 ```

@@ -1,3 +1,31 @@
+## [0.1.19] - 2026-02-21
+
+### Summary
+
+feat(docs): CLI interface improvements
+
+### Docs
+
+- docs: update QUICK_START.md
+- docs: update README
+- docs: update configuration_guide.md
+- docs: update privacy_protection.md
+- docs: update privacy_quick_start.md
+
+### Test
+
+- update tests/test_main.py
+
+### Build
+
+- update pyproject.toml
+
+### Other
+
+- update heal/cli.py
+- update heal/privacy.py
+
+
 ## [0.1.18] - 2026-02-21
 
 ### Summary
@@ -21,6 +49,13 @@ fix(docs): CLI interface improvements
 
 ### Added
 
+- **Privacy protection** - `--anonymize` flag to mask sensitive data before sending to LLM
+  - Email addresses, phone numbers, ID numbers (basic regex masking)
+  - Personal names, addresses, dates (advanced with priv-masker)
+  - Optional dependency: `pip install heal[privacy]`
+- **Privacy status check** - `heal fix --privacy-check` to verify masking availability
+- **Privacy module** - `heal/privacy.py` with PrivacyMasker class
+- **Fallback masking** - Basic regex-based masking when priv-masker not available
 - **Interactive reconfiguration menu** - `heal test` now offers specific options when errors occur:
   - Change provider and API key
   - Just update API key (keep current provider)
@@ -32,6 +67,12 @@ fix(docs): CLI interface improvements
 
 - **Improved error recovery flow** - more granular options for fixing configuration issues
 - **Better user guidance** - clear prompts for each reconfiguration option
+
+### Documentation
+
+- Added privacy protection guide with examples
+- Added GDPR/RODO compliance information
+- Added security considerations for sensitive data
 
 ## [0.1.17] - 2026-02-21
 

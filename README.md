@@ -5,7 +5,7 @@
 ## Installation
 
 ```bash
-pip install fixi
+pip install heal
 ```
 
 ## Quick Start
@@ -42,6 +42,9 @@ make build 2>&1 | heal
 
 # From error file
 heal < error.log
+
+# With privacy protection (anonymize sensitive data)
+production_script.py 2>&1 | heal --anonymize
 ```
 
 ### Automatic Mode (with shell integration)
@@ -67,6 +70,7 @@ heal
 - 🔄 **Automatic command capture** - Shell hook captures last command and output
 - 📥 **Multiple input methods** - Works with stdin, files, or shell hooks
 - ⚙️ **Configurable models** - Support for various LLM providers via litellm
+- 🔒 **Privacy protection** - Anonymize sensitive data before sending to LLM (optional)
 - 🚀 **Zero-config start** - Just run `heal` after any error
 
 ## Usage Examples

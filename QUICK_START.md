@@ -5,7 +5,7 @@ Get started with heal in 5 minutes! 🚀
 ## Installation
 
 ```bash
-pip install fixi
+pip install heal
 ```
 
 ## Setup (3 steps)
