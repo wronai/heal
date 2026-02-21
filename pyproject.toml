@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ckr"
-version = "0.1.9"
+version = "0.1.10"
 description = "A Python package for healing and wellness"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -42,7 +42,7 @@ dev = [
 ]
 
 [project.scripts]
-heal = "heal.cli:main"
+ckr = "heal.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/yourusername/heal"
