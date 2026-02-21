@@ -1,57 +1,253 @@
-# Heal
+# Heal 🩺
 
-A Python package for fixing shell errors using LLM assistance.
+**LLM-powered shell error fixing** - Your AI assistant for debugging and fixing command-line errors instantly.
 
 ## Installation
 
 ```bash
-pip install heal
+pip install fixi
 ```
 
 ## Quick Start
 
-### Basic Usage (with pipe)
+### Complete Setup (Recommended)
 
 ```bash
-# Fix errors by piping stderr to heal
-make dev 2>&1 | heal fix
+# 1. Configure heal (first time only)
+heal config
 
-# Or from error file
-heal fix < error.txt
+# 2. Test your configuration
+heal test
+
+# 3. Initialize bash integration
+heal init
+
+# 4. Restart your shell
+source ~/.bashrc
+
+# 5. Use heal - just run any command and then heal!
+python broken_script.py
+heal
 ```
 
-### Automatic Mode (with shell hook)
+### Simplest Usage - Just `heal`
 
 ```bash
-# Install shell hook for automatic error capture
-heal install
+# Run any failing command, then simply run heal
+npm install
+heal
 
-# Add to ~/.bashrc:
-source ~/.heal/heal.bash
+# Or pipe errors directly
+make build 2>&1 | heal
 
-# Now you can run:
+# From error file
+heal < error.log
+```
+
+### Automatic Mode (with shell integration)
+
+```bash
+# Initialize bash integration (recommended)
+heal init
+
+# This will automatically add to ~/.bashrc
+# Or manually add: source ~/.heal/heal.bash
+
+# Restart your shell
+source ~/.bashrc
+
+# Now you can run any command and heal will capture it:
 your_failing_command
-heal fix
+heal
 ```
 
 ## Features
 
-- **LLM-powered error analysis** - Uses GPT models to understand and fix shell errors
-- **Automatic command capture** - Shell hook captures last command and output
-- **Multiple input methods** - Works with stdin, files, or shell hooks
-- **Configurable models** - Support for various LLM providers via litellm
+- 🤖 **LLM-powered error analysis** - Uses GPT models to understand and fix shell errors
+- 🔄 **Automatic command capture** - Shell hook captures last command and output
+- 📥 **Multiple input methods** - Works with stdin, files, or shell hooks
+- ⚙️ **Configurable models** - Support for various LLM providers via litellm
+- 🚀 **Zero-config start** - Just run `heal` after any error
+
+## Usage Examples
+
+### Python Development
+
+```bash
+# Missing dependencies
+python app.py 2>&1 | heal
+# → Suggests: pip install <missing-package>
+
+# Import errors
+python -m pytest 2>&1 | heal
+# → Analyzes import paths and suggests fixes
+
+# Virtual environment issues
+python script.py 2>&1 | heal
+# → Detects venv problems and suggests activation
+```
+
+### Node.js / JavaScript
+
+```bash
+# NPM install failures
+npm install 2>&1 | heal
+# → Suggests clearing cache, fixing package.json, or using --legacy-peer-deps
+
+# Build errors
+npm run build 2>&1 | heal
+# → Analyzes webpack/vite errors and suggests configuration fixes
+
+# Module not found
+node app.js 2>&1 | heal
+# → Suggests installing missing packages or fixing import paths
+```
+
+### Docker & Containers
+
+```bash
+# Docker build failures
+docker build . 2>&1 | heal
+# → Analyzes Dockerfile errors and suggests fixes
+
+# Container runtime errors
+docker-compose up 2>&1 | heal
+# → Suggests port conflicts, volume issues, or network problems
+
+# Permission issues
+docker run myimage 2>&1 | heal
+# → Suggests user/group fixes or volume mount corrections
+```
+
+### Git Operations
+
+```bash
+# Merge conflicts
+git merge feature-branch 2>&1 | heal
+# → Suggests conflict resolution strategies
+
+# Push/pull errors
+git push origin main 2>&1 | heal
+# → Analyzes authentication, branch tracking, or force push needs
+
+# Rebase issues
+git rebase main 2>&1 | heal
+# → Suggests conflict resolution or rebase abort/continue
+```
+
+### Build Systems
+
+```bash
+# Make errors
+make build 2>&1 | heal
+# → Analyzes missing dependencies or compilation errors
+
+# CMake configuration
+cmake . 2>&1 | heal
+# → Suggests missing libraries or configuration flags
+
+# Gradle/Maven builds
+./gradlew build 2>&1 | heal
+# → Analyzes Java compilation or dependency errors
+```
+
+### Database Operations
+
+```bash
+# PostgreSQL connection
+psql -U user -d database 2>&1 | heal
+# → Suggests authentication fixes or connection string corrections
+
+# MySQL import errors
+mysql < dump.sql 2>&1 | heal
+# → Analyzes syntax errors or permission issues
+
+# MongoDB connection
+mongosh mongodb://localhost:27017 2>&1 | heal
+# → Suggests service status checks or authentication fixes
+```
+
+### System Administration
+
+```bash
+# Permission denied
+./script.sh 2>&1 | heal
+# → Suggests chmod +x or sudo usage
+
+# Port already in use
+python -m http.server 8000 2>&1 | heal
+# → Suggests finding and killing the process using the port
+
+# Disk space issues
+cp large-file.zip /destination 2>&1 | heal
+# → Suggests cleaning up space or alternative locations
+```
+
+### Package Management
+
+```bash
+# APT/DNF errors
+sudo apt install package 2>&1 | heal
+# → Suggests repository updates or alternative package names
+
+# Homebrew issues
+brew install tool 2>&1 | heal
+# → Suggests tap additions or formula fixes
+
+# pip install failures
+pip install package 2>&1 | heal
+# → Suggests using --user, venv, or resolving dependency conflicts
+```
 
 ## Commands
 
+### `heal` (default)
+Fix shell errors using LLM. Reads from stdin or captured output.
+
+```bash
+heal [--model MODEL] [--api-key KEY]
+```
+
+### `heal init`
+Initialize bash integration for automatic command and output capture.
+
+```bash
+heal init
+```
+
+This will:
+- Create `~/.heal/heal.bash` with command capture hooks
+- Optionally add to your `~/.bashrc` automatically
+- Enable helper commands: `heal-last`, `heal-output`
+
+### `heal test`
+Test your configuration with a simulated error.
+
+```bash
+heal test
+```
+
+This will:
+- Verify your provider and API key are configured
+- Send a test request to the LLM
+- Show you a sample response
+
+### `heal config`
+Configure or reconfigure heal settings (provider, API key, model).
+
+```bash
+heal config
+```
+
 ### `heal fix`
-Fix shell errors using LLM. Reads from stdin or shell hook.
+Explicit fix command (same as default `heal`).
 
 ```bash
 heal fix [--model MODEL] [--api-key KEY]
 ```
 
 ### `heal install`
-Install shell hook for automatic error capture.
+Legacy command (use `heal init` instead).
 
 ```bash
 heal install
@@ -64,30 +260,97 @@ Remove shell hook and configuration.
 heal uninstall
 ```
 
+### `heal --help`
+Show help message and available commands.
+
+```bash
+heal --help
+```
+
 ## Configuration
 
-On first run, heal will prompt for:
-- API key (for your LLM provider)
-- Model name (e.g., `gpt-4o-mini`, `gpt-4.1`)
+### First-Time Setup
+
+On first run, heal will guide you through an interactive setup:
+
+```bash
+$ heal
+
+🔧 First-time setup - Let's configure your LLM provider
+
+Available providers:
+  1. OpenRouter (recommended)
+  2. OpenAI
+  3. Anthropic
+  4. Google AI
+
+💡 Tip: OpenRouter gives you access to all models with one API key
+
+Select provider [1]: 1
+
+🔑 Get your OpenRouter API key here:
+   https://openrouter.ai/keys
+
+Enter your API key: sk-or-...
+
+🤖 Select a model from OpenRouter:
+
+  1. openai/gpt-4o-mini
+     GPT-4o Mini (fast, cheap, recommended)
+  2. openai/gpt-4o
+     GPT-4o (most capable)
+  3. anthropic/claude-3.5-sonnet
+     Claude 3.5 Sonnet (excellent reasoning)
+  4. google/gemini-pro-1.5
+     Gemini Pro 1.5 (long context)
+  5. meta-llama/llama-3.1-70b-instruct
+     Llama 3.1 70B (open source)
+  6. qwen/qwen-2.5-72b-instruct
+     Qwen 2.5 72B (multilingual)
+  7. Custom (enter model name manually)
+
+Select model [1]: 1
+```
+
+### Reconfigure Settings
+
+Change your provider, API key, or model anytime:
+
+```bash
+heal config
+```
+
+### Supported Providers
+
+#### 🌐 OpenRouter (Recommended)
+- **Why?** Access to all models with one API key
+- **Get API key:** [openrouter.ai/keys](https://openrouter.ai/keys)
+- **Models:** GPT-4, Claude, Gemini, Llama, Qwen, and 100+ more
+
+#### 🤖 OpenAI
+- **Get API key:** [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
+- **Models:** GPT-4o, GPT-4o-mini, GPT-4-turbo, GPT-3.5-turbo
+
+#### 🧠 Anthropic
+- **Get API key:** [console.anthropic.com/settings/keys](https://console.anthropic.com/settings/keys)
+- **Models:** Claude 3.5 Sonnet, Claude 3 Opus, Claude 3 Haiku
+
+#### 🔍 Google AI
+- **Get API key:** [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)
+- **Models:** Gemini Pro, Gemini Pro Vision
+
+### Manual Configuration
+
+Edit `~/.heal/.env`:
+
+```bash
+HEAL_PROVIDER=openrouter
+HEAL_API_KEY=your-api-key-here
+HEAL_MODEL=openai/gpt-4o-mini
+HEAL_BASE_URL=https://openrouter.ai/api/v1
+```
 
 Configuration is stored in `~/.heal/.env`.
-
-## Examples
-
-### Fix a make error
-```bash
-make dev 2>&1 | heal fix
-```
-
-### Fix a Python error
-```bash
-python script.py 2>&1 | heal fix
-```
-
-### Fix from error log
-```bash
-heal fix < application.log
-```
 
 ## Development
 

@@ -1,3 +1,74 @@
+## [0.1.15] - 2026-02-21
+
+### Summary
+
+refactor(docs): CLI interface improvements
+
+### Docs
+
+- docs: update QUICK_START.md
+- docs: update README
+- docs: update TODO.md
+- docs: update README
+- docs: update configuration_guide.md
+- docs: update docker_errors.md
+- docs: update getting_started.md
+- docs: update git_errors.md
+- docs: update nodejs_errors.md
+- docs: update python_errors.md
+
+### Test
+
+- update tests/test_cli.py
+- update tests/test_main.py
+
+### Other
+
+- update heal/cli.py
+
+
+## [Unreleased]
+
+### Added
+
+- **`heal test` command** to verify configuration with simulated error
+- **`heal init` command** for automatic bash integration setup
+- **Automatic command and output capture** via bash buffer system
+- **Helper commands**: `heal-last` (show last command), `heal-output` (show last output)
+- **Auto-install to ~/.bashrc** with confirmation prompt
+- **Exit code tracking** for better error context
+- **Interactive provider selection** with OpenRouter as default (recommended)
+- **Numbered model selection menus** for easy configuration
+- **Direct API key links** for each provider (OpenRouter, OpenAI, Anthropic, Google AI)
+- **`heal config` command** to reconfigure settings anytime
+- Support for multiple LLM providers: OpenRouter, OpenAI, Anthropic, Google AI
+- Default `heal` command now runs fix automatically (no need to type `heal fix`)
+- Comprehensive usage examples for different IT scenarios in README
+- Examples for Python, Node.js, Docker, Git, Build Systems, Databases, System Admin, and Package Management
+- Manual configuration documentation
+- TODO.md with 60+ planned improvements
+- Examples directory with real-world error scenarios
+- Configuration guide with step-by-step setup for all providers
+
+### Changed
+
+- **Configuration UX completely redesigned** with interactive numbered menus
+- CLI behavior: `heal` without arguments now invokes fix command
+- `heal --help`, `heal -h`, or `heal help` shows help message
+- Enhanced README with emojis and better structure
+- Improved feature descriptions and quick start guide
+- Provider-specific API key handling for better compatibility
+
+### Documentation
+
+- Added interactive configuration flow examples
+- Added 4 provider sections with API key links
+- Added 8 categories of real-world usage examples
+- Added manual configuration section
+- Added supported models documentation
+- Improved quick start instructions
+- Created comprehensive examples directory
+
 ## [0.1.14] - 2026-02-21
 
 ### Summary

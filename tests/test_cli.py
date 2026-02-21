@@ -51,15 +51,15 @@ def test_fix_command_with_input(mock_llm, mock_stdin, mock_cmd, mock_config):
 
 
 def test_install_command():
-    """Test install command."""
+    """Test install command (now redirects to init)."""
     runner = CliRunner()
     with patch('heal.cli.CONFIG_DIR') as mock_config_dir:
         mock_config_dir.__str__ = lambda: '/home/user/.heal'
         mock_config_dir.exists.return_value = True
         
-        result = runner.invoke(main, ['install'])
+        result = runner.invoke(main, ['install'], input='n\n')
         assert result.exit_code == 0
-        assert 'Shell hook installed successfully!' in result.output
+        assert 'deprecated' in result.output.lower() or 'Heal bash integration created' in result.output
 
 
 def test_uninstall_command():

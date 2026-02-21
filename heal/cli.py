@@ -15,6 +15,53 @@ from litellm import completion
 CONFIG_DIR = Path.home() / ".heal"
 ENV_PATH = CONFIG_DIR / ".env"
 
+# Provider configurations with API key URLs and popular models
+PROVIDERS = {
+    "openrouter": {
+        "name": "OpenRouter",
+        "api_key_url": "https://openrouter.ai/keys",
+        "base_url": "https://openrouter.ai/api/v1",
+        "models": [
+            ("openai/gpt-4o-mini", "GPT-4o Mini (fast, cheap, recommended)"),
+            ("openai/gpt-4o", "GPT-4o (most capable)"),
+            ("anthropic/claude-3.5-sonnet", "Claude 3.5 Sonnet (excellent reasoning)"),
+            ("google/gemini-pro-1.5", "Gemini Pro 1.5 (long context)"),
+            ("meta-llama/llama-3.1-70b-instruct", "Llama 3.1 70B (open source)"),
+            ("qwen/qwen-2.5-72b-instruct", "Qwen 2.5 72B (multilingual)"),
+        ]
+    },
+    "openai": {
+        "name": "OpenAI",
+        "api_key_url": "https://platform.openai.com/api-keys",
+        "base_url": None,
+        "models": [
+            ("gpt-4o-mini", "GPT-4o Mini (fast, cheap, recommended)"),
+            ("gpt-4o", "GPT-4o (most capable)"),
+            ("gpt-4-turbo", "GPT-4 Turbo (previous generation)"),
+            ("gpt-3.5-turbo", "GPT-3.5 Turbo (legacy, cheap)"),
+        ]
+    },
+    "anthropic": {
+        "name": "Anthropic",
+        "api_key_url": "https://console.anthropic.com/settings/keys",
+        "base_url": None,
+        "models": [
+            ("claude-3-5-sonnet-20241022", "Claude 3.5 Sonnet (recommended)"),
+            ("claude-3-opus-20240229", "Claude 3 Opus (most capable)"),
+            ("claude-3-haiku-20240307", "Claude 3 Haiku (fast, cheap)"),
+        ]
+    },
+    "google": {
+        "name": "Google AI",
+        "api_key_url": "https://aistudio.google.com/app/apikey",
+        "base_url": None,
+        "models": [
+            ("gemini-pro", "Gemini Pro (recommended)"),
+            ("gemini-pro-vision", "Gemini Pro Vision (multimodal)"),
+        ]
+    },
+}
+
 
 def ensure_config():
     """Ensure configuration exists and prompt for missing values."""
@@ -25,23 +72,88 @@ def ensure_config():
 
     load_dotenv(ENV_PATH)
 
+    provider = os.getenv("HEAL_PROVIDER")
     api_key = os.getenv("HEAL_API_KEY")
     model = os.getenv("HEAL_MODEL")
+    base_url = os.getenv("HEAL_BASE_URL")
 
+    # Select provider if not configured
+    if not provider:
+        click.echo("\n🔧 First-time setup - Let's configure your LLM provider\n")
+        click.echo("Available providers:")
+        provider_list = list(PROVIDERS.keys())
+        for i, prov_key in enumerate(provider_list, 1):
+            prov_info = PROVIDERS[prov_key]
+            default_marker = " (recommended)" if prov_key == "openrouter" else ""
+            click.echo(f"  {i}. {prov_info['name']}{default_marker}")
+        
+        click.echo("\n💡 Tip: OpenRouter gives you access to all models with one API key")
+        
+        choice = click.prompt(
+            "\nSelect provider",
+            type=click.IntRange(1, len(provider_list)),
+            default=1
+        )
+        provider = provider_list[choice - 1]
+        set_key(ENV_PATH, "HEAL_PROVIDER", provider)
+
+    provider_info = PROVIDERS.get(provider, PROVIDERS["openrouter"])
+
+    # Get API key if not configured
     if not api_key:
-        api_key = click.prompt("Enter API key", type=str).strip()
+        click.echo(f"\n🔑 Get your {provider_info['name']} API key here:")
+        click.echo(f"   {click.style(provider_info['api_key_url'], fg='cyan', underline=True)}")
+        click.echo()
+        api_key = click.prompt("Enter your API key", type=str).strip()
         set_key(ENV_PATH, "HEAL_API_KEY", api_key)
 
+    # Select model if not configured
     if not model:
-        model = click.prompt("Enter model (e.g. gpt-4o-mini, gpt-4.1, etc)", type=str, default="gpt-4o-mini").strip()
+        click.echo(f"\n🤖 Select a model from {provider_info['name']}:\n")
+        models = provider_info['models']
+        for i, (model_id, description) in enumerate(models, 1):
+            click.echo(f"  {i}. {model_id}")
+            click.echo(f"     {click.style(description, fg='bright_black')}")
+        
+        click.echo(f"\n  {len(models) + 1}. Custom (enter model name manually)")
+        
+        choice = click.prompt(
+            "\nSelect model",
+            type=click.IntRange(1, len(models) + 1),
+            default=1
+        )
+        
+        if choice <= len(models):
+            model = models[choice - 1][0]
+        else:
+            model = click.prompt("Enter custom model name", type=str).strip()
+        
         set_key(ENV_PATH, "HEAL_MODEL", model)
 
+    # Set base URL for OpenRouter
+    if provider == "openrouter" and not base_url:
+        base_url = provider_info['base_url']
+        set_key(ENV_PATH, "HEAL_BASE_URL", base_url)
+
+    # Load into environment
+    os.environ["HEAL_PROVIDER"] = provider
     os.environ["HEAL_API_KEY"] = api_key
     os.environ["HEAL_MODEL"] = model
+    if base_url:
+        os.environ["HEAL_BASE_URL"] = base_url
 
 
 def last_shell_command():
-    """Get the last shell command from history."""
+    """Get the last shell command from buffer or history."""
+    # First try to read from buffer (if heal init was used)
+    cmd_file = CONFIG_DIR / "last_command.txt"
+    if cmd_file.exists():
+        try:
+            return cmd_file.read_text().strip()
+        except Exception:
+            pass
+    
+    # Fallback to bash history
     try:
         out = subprocess.check_output(
             ["bash", "-lc", "fc -ln -1"],
@@ -62,34 +174,56 @@ def read_stdin():
 
 def get_last_output():
     """Read the last captured output from shell hook."""
+    # Try new buffer location first
     output_file = CONFIG_DIR / "last_output.txt"
     if output_file.exists():
         return output_file.read_text()
+    
+    # Fallback to old location for backwards compatibility
+    old_output_file = CONFIG_DIR / "last_output.txt"
+    if old_output_file.exists():
+        return old_output_file.read_text()
+    
     return ""
 
 
 def call_llm(model, api_key, prompt):
     """Call the LLM with the given prompt."""
-    # litellm uses standard envs
-    os.environ["OPENAI_API_KEY"] = api_key
+    provider = os.getenv("HEAL_PROVIDER", "openrouter")
+    base_url = os.getenv("HEAL_BASE_URL")
+    
+    # Set API key based on provider
+    if provider == "openrouter":
+        os.environ["OPENROUTER_API_KEY"] = api_key
+    elif provider == "anthropic":
+        os.environ["ANTHROPIC_API_KEY"] = api_key
+    elif provider == "google":
+        os.environ["GOOGLE_API_KEY"] = api_key
+    else:
+        os.environ["OPENAI_API_KEY"] = api_key
 
     try:
-        resp = completion(
-            model=model,
-            messages=[
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.2,
-        )
+        kwargs = {
+            "model": model,
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": 0.2,
+        }
+        
+        if base_url:
+            kwargs["api_base"] = base_url
+        
+        resp = completion(**kwargs)
         return resp.choices[0].message.content
     except Exception as e:
         return f"Error calling LLM: {e}"
 
 
-@click.group()
-def main():
+@click.group(invoke_without_command=True)
+@click.pass_context
+def main(ctx):
     """Heal - LLM-powered shell error fixing."""
-    pass
+    if ctx.invoked_subcommand is None:
+        ctx.invoke(fix)
 
 
 @main.command()
@@ -142,45 +276,229 @@ If there's no obvious error, suggest debugging steps.
 
 
 @main.command()
-def install():
-    """Install shell hook for automatic error capture."""
-    shell_hook_path = CONFIG_DIR / "heal.bash"
+def test():
+    """Test heal with a simulated error to verify configuration."""
+    click.echo("\n🧪 Testing heal configuration...\n")
     
-    # Create the shell hook
-    hook_content = '''# Heal shell hook for automatic command capture
-__heal_cmd=""
-__heal_out="$HOME/.heal/last_output.txt"
+    # Check if configured
+    load_dotenv(ENV_PATH)
+    provider = os.getenv("HEAL_PROVIDER")
+    model = os.getenv("HEAL_MODEL")
+    api_key = os.getenv("HEAL_API_KEY")
+    
+    if not all([provider, model, api_key]):
+        click.echo("❌ Heal is not configured yet.")
+        click.echo("   Run 'heal config' first to set up your provider and API key.\n")
+        return
+    
+    provider_info = PROVIDERS.get(provider, PROVIDERS["openrouter"])
+    click.echo(f"✓ Provider: {provider_info['name']}")
+    click.echo(f"✓ Model: {model}")
+    click.echo(f"✓ API Key: {'*' * 20}{api_key[-4:]}")
+    click.echo()
+    
+    # Simulate a common error
+    simulated_command = "python app.py"
+    simulated_error = """Traceback (most recent call last):
+  File "app.py", line 3, in <module>
+    from flask import Flask
+ModuleNotFoundError: No module named 'flask'"""
+    
+    click.echo("📝 Simulating error:")
+    click.echo(f"   Command: {simulated_command}")
+    click.echo(f"   Error: ModuleNotFoundError: No module named 'flask'")
+    click.echo()
+    click.echo("🤖 Asking LLM for solution...\n")
+    
+    # Create test prompt
+    prompt = f"""You are a CLI assistant that helps fix shell errors.
 
-mkdir -p "$HOME/.heal"
+The user executed: {simulated_command}
 
-preexec_heal() {
-  __heal_cmd="$1"
-  exec 3>&1 4>&2
-  exec > >(tee "$__heal_out") 2>&1
+And got this error:
+{simulated_error}
+
+Provide a brief, practical solution (2-3 sentences max)."""
+    
+    try:
+        response = call_llm(model, api_key, prompt)
+        click.echo("💡 LLM Response:")
+        click.echo("─" * 60)
+        click.echo(response)
+        click.echo("─" * 60)
+        click.echo()
+        click.echo("✅ Test successful! Heal is working correctly.")
+        click.echo("   You can now use: command 2>&1 | heal")
+    except Exception as e:
+        click.echo(f"❌ Test failed: {e}")
+        click.echo()
+        click.echo("Troubleshooting:")
+        click.echo("  1. Check your API key is valid")
+        click.echo("  2. Verify you have credits/billing enabled")
+        click.echo("  3. Run 'heal config' to reconfigure")
+
+
+@main.command()
+def init():
+    """Initialize bash integration for automatic command capture."""
+    shell_hook_path = CONFIG_DIR / "heal.bash"
+    bashrc_path = Path.home() / ".bashrc"
+    
+    # Create improved shell hook with buffer
+    hook_content = '''# Heal shell integration for automatic command and output capture
+# This captures the last command and its output for easy error fixing
+
+export HEAL_DIR="$HOME/.heal"
+mkdir -p "$HEAL_DIR"
+
+# Buffer files
+export HEAL_LAST_CMD="$HEAL_DIR/last_command.txt"
+export HEAL_LAST_OUT="$HEAL_DIR/last_output.txt"
+
+# Capture command before execution
+__heal_preexec() {
+    # Save the command that's about to run
+    echo "$1" > "$HEAL_LAST_CMD"
+    
+    # Start capturing output
+    exec 3>&1 4>&2
+    exec > >(tee "$HEAL_LAST_OUT") 2>&1
 }
 
-precmd_heal() {
-  exec 1>&3 2>&4
-  exec 3>&- 4>&-
+# Restore output after command execution
+__heal_precmd() {
+    local exit_code=$?
+    
+    # Restore normal output
+    exec 1>&3 2>&4 2>/dev/null
+    exec 3>&- 4>&- 2>/dev/null
+    
+    # Save exit code for reference
+    echo "$exit_code" > "$HEAL_DIR/last_exit_code.txt"
+    
+    return $exit_code
 }
 
-trap 'preexec_heal "$BASH_COMMAND"' DEBUG
-PROMPT_COMMAND="precmd_heal"
+# Set up the hooks
+if [[ -n "$BASH_VERSION" ]]; then
+    # Bash-specific setup
+    trap '__heal_preexec "$BASH_COMMAND"' DEBUG
+    PROMPT_COMMAND="__heal_precmd${PROMPT_COMMAND:+; $PROMPT_COMMAND}"
+fi
+
+# Helper function to show last command
+heal-last() {
+    if [[ -f "$HEAL_LAST_CMD" ]]; then
+        echo "Last command:"
+        cat "$HEAL_LAST_CMD"
+    else
+        echo "No command captured yet"
+    fi
+}
+
+# Helper function to show last output
+heal-output() {
+    if [[ -f "$HEAL_LAST_OUT" ]]; then
+        cat "$HEAL_LAST_OUT"
+    else
+        echo "No output captured yet"
+    fi
+}
 '''
     
+    CONFIG_DIR.mkdir(exist_ok=True)
     shell_hook_path.write_text(hook_content)
     
-    click.echo("Shell hook installed successfully!")
+    click.echo("\n✅ Heal bash integration created!\n")
+    click.echo(f"📄 Hook file: {shell_hook_path}\n")
+    
+    # Check if already in bashrc
+    source_line = f"source {shell_hook_path}"
+    already_installed = False
+    
+    if bashrc_path.exists():
+        bashrc_content = bashrc_path.read_text()
+        if str(shell_hook_path) in bashrc_content or "heal.bash" in bashrc_content:
+            already_installed = True
+    
+    if already_installed:
+        click.echo("ℹ️  Already installed in ~/.bashrc")
+    else:
+        click.echo("📝 To activate, add this line to your ~/.bashrc:")
+        click.echo(f"   {click.style(source_line, fg='cyan')}")
+        click.echo()
+        
+        if click.confirm("   Add to ~/.bashrc automatically?", default=True):
+            try:
+                with open(bashrc_path, 'a') as f:
+                    f.write(f"\n# Heal - LLM-powered error fixing\n")
+                    f.write(f"{source_line}\n")
+                click.echo("   ✅ Added to ~/.bashrc")
+            except Exception as e:
+                click.echo(f"   ❌ Failed to update ~/.bashrc: {e}")
+                click.echo(f"   Please add manually: {source_line}")
+    
     click.echo()
-    click.echo("Add this line to your ~/.bashrc:")
-    click.echo(f"  source {shell_hook_path}")
+    click.echo("🔄 To activate now, run:")
+    click.echo(f"   source ~/.bashrc")
     click.echo()
-    click.echo("Then restart your shell or run:")
-    click.echo("  source ~/.bashrc")
+    click.echo("📚 Usage after activation:")
+    click.echo("   1. Run any command (it will be captured automatically)")
+    click.echo("   2. If it fails, just run: heal")
+    click.echo("   3. Heal will analyze the error and suggest fixes")
     click.echo()
-    click.echo("After installation, you can simply run:")
-    click.echo("  your_command")
-    click.echo("  heal fix")
+    click.echo("💡 Helper commands:")
+    click.echo("   heal-last    - Show last captured command")
+    click.echo("   heal-output  - Show last captured output")
+
+
+@main.command()
+def install():
+    """Install shell hook for automatic error capture (legacy, use 'heal init' instead)."""
+    click.echo("ℹ️  Note: 'heal install' is deprecated. Use 'heal init' instead.\n")
+    
+    # Call init instead
+    from click.testing import CliRunner
+    runner = CliRunner()
+    result = runner.invoke(init)
+    click.echo(result.output)
+
+
+@main.command()
+def config():
+    """Configure or reconfigure heal settings (provider, API key, model)."""
+    CONFIG_DIR.mkdir(exist_ok=True)
+    
+    if not ENV_PATH.exists():
+        ENV_PATH.touch()
+    
+    load_dotenv(ENV_PATH)
+    
+    click.echo("\n⚙️  Heal Configuration\n")
+    
+    # Show current configuration
+    current_provider = os.getenv("HEAL_PROVIDER")
+    current_model = os.getenv("HEAL_MODEL")
+    
+    if current_provider and current_model:
+        click.echo(f"Current settings:")
+        click.echo(f"  Provider: {PROVIDERS.get(current_provider, {}).get('name', current_provider)}")
+        click.echo(f"  Model: {current_model}")
+        click.echo()
+        
+        if not click.confirm("Do you want to reconfigure?", default=False):
+            return
+    
+    # Clear existing configuration
+    for key in ["HEAL_PROVIDER", "HEAL_API_KEY", "HEAL_MODEL", "HEAL_BASE_URL"]:
+        if os.getenv(key):
+            os.environ.pop(key, None)
+    
+    # Run configuration
+    ensure_config()
+    
+    click.echo("\n✅ Configuration saved successfully!")
+    click.echo(f"   Config file: {ENV_PATH}")
 
 
 @main.command()
