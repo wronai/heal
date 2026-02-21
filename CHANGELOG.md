@@ -1,3 +1,14 @@
+## [0.1.7] - 2026-02-21
+
+### Summary
+
+chore(config): config module improvements
+
+### Build
+
+- update pyproject.toml
+
+
 ## [0.1.6] - 2026-02-21
 
 ### Summary

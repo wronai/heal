@@ -3,8 +3,8 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "ckr"
-version = "0.1.6"
+name = "bix"
+version = "0.1.7"
 description = "A Python package for healing and wellness"
 readme = "README.md"
 requires-python = ">=3.8"
