@@ -386,12 +386,60 @@ Provide a brief, practical solution (2-3 sentences max)."""
             click.echo("  • API key doesn't have proper permissions")
             click.echo("  • Wrong provider selected for this API key")
             click.echo()
-            if click.confirm("Would you like to reconfigure your API key?", default=True):
-                # Clear the config to force reconfiguration
+            click.echo("Let's reconfigure your settings step by step:\n")
+            
+            # Ask what to reconfigure
+            click.echo("What would you like to do?")
+            click.echo("  1. Change provider and API key")
+            click.echo("  2. Just update API key (keep current provider)")
+            click.echo("  3. Try a different model (keep provider and key)")
+            click.echo("  4. Cancel")
+            
+            choice = click.prompt("\nSelect option", type=click.IntRange(1, 4), default=1)
+            
+            if choice == 1:
+                # Full reconfiguration
+                click.echo("\n🔧 Full reconfiguration\n")
+                # Clear everything from env file
+                if ENV_PATH.exists():
+                    ENV_PATH.unlink()
+                # Clear env vars
                 for key in ["HEAL_PROVIDER", "HEAL_API_KEY", "HEAL_MODEL", "HEAL_BASE_URL"]:
                     os.environ.pop(key, None)
                 ensure_config()
                 click.echo("\n✅ Reconfigured! Try running 'heal test' again.")
+            elif choice == 2:
+                # Just update API key
+                click.echo("\n🔑 Update API key\n")
+                provider = os.getenv("HEAL_PROVIDER", "openrouter")
+                provider_info = PROVIDERS.get(provider, PROVIDERS["openrouter"])
+                click.echo(f"Provider: {provider_info['name']}")
+                click.echo(f"Get your API key: {click.style(provider_info['api_key_url'], fg='cyan', underline=True)}\n")
+                new_api_key = click.prompt("Enter your new API key", type=str).strip()
+                set_key(ENV_PATH, "HEAL_API_KEY", new_api_key)
+                os.environ["HEAL_API_KEY"] = new_api_key
+                click.echo("\n✅ API key updated! Try running 'heal test' again.")
+            elif choice == 3:
+                # Change model
+                click.echo("\n🤖 Select a different model\n")
+                provider = os.getenv("HEAL_PROVIDER", "openrouter")
+                provider_info = PROVIDERS.get(provider, PROVIDERS["openrouter"])
+                models = provider_info['models']
+                for i, (model_id, description) in enumerate(models, 1):
+                    click.echo(f"  {i}. {model_id}")
+                    click.echo(f"     {click.style(description, fg='bright_black')}")
+                click.echo(f"\n  {len(models) + 1}. Custom (enter model name manually)")
+                
+                model_choice = click.prompt("\nSelect model", type=click.IntRange(1, len(models) + 1), default=1)
+                if model_choice <= len(models):
+                    new_model = models[model_choice - 1][0]
+                else:
+                    new_model = click.prompt("Enter custom model name", type=str).strip()
+                
+                set_key(ENV_PATH, "HEAL_MODEL", new_model)
+                os.environ["HEAL_MODEL"] = new_model
+                click.echo(f"\n✅ Model changed to: {new_model}")
+                click.echo("Try running 'heal test' again.")
             else:
                 click.echo("\nRun 'heal config' when ready to fix your configuration.")
         elif "rate_limit" in error_str.lower():
@@ -415,10 +463,42 @@ Provide a brief, practical solution (2-3 sentences max)."""
             click.echo("  4. Try a different model")
             click.echo()
             if click.confirm("Would you like to reconfigure?", default=False):
-                for key in ["HEAL_PROVIDER", "HEAL_API_KEY", "HEAL_MODEL", "HEAL_BASE_URL"]:
-                    os.environ.pop(key, None)
-                ensure_config()
-                click.echo("\n✅ Reconfigured! Try running 'heal test' again.")
+                click.echo("\nWhat would you like to do?")
+                click.echo("  1. Full reconfiguration (provider, API key, model)")
+                click.echo("  2. Just change the model")
+                click.echo("  3. Cancel")
+                
+                choice = click.prompt("\nSelect option", type=click.IntRange(1, 3), default=2)
+                
+                if choice == 1:
+                    # Full reconfiguration
+                    if ENV_PATH.exists():
+                        ENV_PATH.unlink()
+                    for key in ["HEAL_PROVIDER", "HEAL_API_KEY", "HEAL_MODEL", "HEAL_BASE_URL"]:
+                        os.environ.pop(key, None)
+                    ensure_config()
+                    click.echo("\n✅ Reconfigured! Try running 'heal test' again.")
+                elif choice == 2:
+                    # Just change model
+                    provider = os.getenv("HEAL_PROVIDER", "openrouter")
+                    provider_info = PROVIDERS.get(provider, PROVIDERS["openrouter"])
+                    models = provider_info['models']
+                    click.echo(f"\n🤖 Select a different model from {provider_info['name']}:\n")
+                    for i, (model_id, description) in enumerate(models, 1):
+                        click.echo(f"  {i}. {model_id}")
+                        click.echo(f"     {click.style(description, fg='bright_black')}")
+                    click.echo(f"\n  {len(models) + 1}. Custom (enter model name manually)")
+                    
+                    model_choice = click.prompt("\nSelect model", type=click.IntRange(1, len(models) + 1), default=1)
+                    if model_choice <= len(models):
+                        new_model = models[model_choice - 1][0]
+                    else:
+                        new_model = click.prompt("Enter custom model name", type=str).strip()
+                    
+                    set_key(ENV_PATH, "HEAL_MODEL", new_model)
+                    os.environ["HEAL_MODEL"] = new_model
+                    click.echo(f"\n✅ Model changed to: {new_model}")
+                    click.echo("Try running 'heal test' again.")
         
         click.echo("─" * 60)
 

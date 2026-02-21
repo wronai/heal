@@ -1,3 +1,38 @@
+## [0.1.18] - 2026-02-21
+
+### Summary
+
+fix(docs): CLI interface improvements
+
+### Docs
+
+- docs: update error_recovery.md
+
+### Test
+
+- update tests/test_main.py
+
+### Other
+
+- update heal/cli.py
+
+
+## [Unreleased]
+
+### Added
+
+- **Interactive reconfiguration menu** - `heal test` now offers specific options when errors occur:
+  - Change provider and API key
+  - Just update API key (keep current provider)
+  - Try a different model (keep provider and key)
+- **Step-by-step problem diagnosis** - asks what you want to fix instead of guessing
+- **Smart configuration clearing** - properly removes .env file for full reconfiguration
+
+### Changed
+
+- **Improved error recovery flow** - more granular options for fixing configuration issues
+- **Better user guidance** - clear prompts for each reconfiguration option
+
 ## [0.1.17] - 2026-02-21
 
 ### Summary
