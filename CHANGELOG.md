@@ -1,3 +1,14 @@
+## [0.1.9] - 2026-02-21
+
+### Summary
+
+chore(config): deep code analysis engine
+
+### Build
+
+- update pyproject.toml
+
+
 ## [0.1.8] - 2026-02-21
 
 ### Summary
