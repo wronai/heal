@@ -1,3 +1,18 @@
+## [0.1.11] - 2026-02-21
+
+### Summary
+
+refactor(config): config module improvements
+
+### Test
+
+- update tests/test_main.py
+
+### Build
+
+- update pyproject.toml
+
+
 ## [0.1.10] - 2026-02-21
 
 ### Summary
