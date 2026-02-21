@@ -1,3 +1,14 @@
+## [0.1.12] - 2026-02-21
+
+### Summary
+
+refactor(tests): test module improvements
+
+### Test
+
+- update tests/test_main.py
+
+
 ## [0.1.11] - 2026-02-21
 
 ### Summary
