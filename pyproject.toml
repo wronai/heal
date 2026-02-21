@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fixi"
-version = "0.1.16"
+version = "0.1.17"
 description = "A Python package for healing and wellness"
 readme = "README.md"
 requires-python = ">=3.8"

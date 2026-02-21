@@ -205,7 +205,7 @@ def get_last_output():
     return ""
 
 
-def call_llm(model, api_key, prompt):
+def call_llm(model, api_key, prompt, raise_on_error=False):
     """Call the LLM with the given prompt."""
     provider = os.getenv("HEAL_PROVIDER", "openrouter")
     base_url = os.getenv("HEAL_BASE_URL")
@@ -213,9 +213,11 @@ def call_llm(model, api_key, prompt):
     # Format model name with provider prefix for litellm
     litellm_model = get_litellm_model_name(provider, model)
     
-    # Set API key based on provider
+    # Set API key based on provider - litellm checks these env vars
     if provider == "openrouter":
         os.environ["OPENROUTER_API_KEY"] = api_key
+        # Also set as generic key for litellm
+        os.environ["OPENAI_API_KEY"] = api_key
     elif provider == "anthropic":
         os.environ["ANTHROPIC_API_KEY"] = api_key
     elif provider == "google":
@@ -233,9 +235,15 @@ def call_llm(model, api_key, prompt):
         if base_url:
             kwargs["api_base"] = base_url
         
+        # For OpenRouter, also pass api_key explicitly
+        if provider == "openrouter":
+            kwargs["api_key"] = api_key
+        
         resp = completion(**kwargs)
         return resp.choices[0].message.content
     except Exception as e:
+        if raise_on_error:
+            raise
         return f"Error calling LLM: {e}"
 
 
@@ -309,8 +317,18 @@ def test():
     
     if not all([provider, model, api_key]):
         click.echo("❌ Heal is not configured yet.")
-        click.echo("   Run 'heal config' first to set up your provider and API key.\n")
-        return
+        click.echo()
+        if click.confirm("Would you like to configure it now?", default=True):
+            ensure_config()
+            click.echo("\n✅ Configuration complete! Running test...\n")
+            # Reload config
+            load_dotenv(ENV_PATH)
+            provider = os.getenv("HEAL_PROVIDER")
+            model = os.getenv("HEAL_MODEL")
+            api_key = os.getenv("HEAL_API_KEY")
+        else:
+            click.echo("   Run 'heal config' when ready to set up.\n")
+            return
     
     provider_info = PROVIDERS.get(provider, PROVIDERS["openrouter"])
     litellm_model = get_litellm_model_name(provider, model)
@@ -346,7 +364,7 @@ And got this error:
 Provide a brief, practical solution (2-3 sentences max)."""
     
     try:
-        response = call_llm(model, api_key, prompt)
+        response = call_llm(model, api_key, prompt, raise_on_error=True)
         click.echo("💡 LLM Response:")
         click.echo("─" * 60)
         click.echo(response)
@@ -355,12 +373,54 @@ Provide a brief, practical solution (2-3 sentences max)."""
         click.echo("✅ Test successful! Heal is working correctly.")
         click.echo("   You can now use: command 2>&1 | heal")
     except Exception as e:
-        click.echo(f"❌ Test failed: {e}")
-        click.echo()
-        click.echo("Troubleshooting:")
-        click.echo("  1. Check your API key is valid")
-        click.echo("  2. Verify you have credits/billing enabled")
-        click.echo("  3. Run 'heal config' to reconfigure")
+        error_str = str(e)
+        click.echo("❌ Test failed!\n")
+        click.echo("💡 Error Details:")
+        click.echo("─" * 60)
+        
+        # Check for specific error types
+        if "AuthenticationError" in error_str or "401" in error_str:
+            click.echo("Authentication failed - your API key appears to be invalid.\n")
+            click.echo("Possible causes:")
+            click.echo("  • API key is incorrect or expired")
+            click.echo("  • API key doesn't have proper permissions")
+            click.echo("  • Wrong provider selected for this API key")
+            click.echo()
+            if click.confirm("Would you like to reconfigure your API key?", default=True):
+                # Clear the config to force reconfiguration
+                for key in ["HEAL_PROVIDER", "HEAL_API_KEY", "HEAL_MODEL", "HEAL_BASE_URL"]:
+                    os.environ.pop(key, None)
+                ensure_config()
+                click.echo("\n✅ Reconfigured! Try running 'heal test' again.")
+            else:
+                click.echo("\nRun 'heal config' when ready to fix your configuration.")
+        elif "rate_limit" in error_str.lower():
+            click.echo("Rate limit exceeded - you're making too many requests.\n")
+            click.echo("Solutions:")
+            click.echo("  • Wait a few minutes and try again")
+            click.echo("  • Check your provider's rate limits")
+            click.echo("  • Consider upgrading your plan")
+        elif "insufficient" in error_str.lower() or "quota" in error_str.lower():
+            click.echo("Insufficient credits or quota exceeded.\n")
+            click.echo("Solutions:")
+            click.echo("  • Add credits to your account")
+            click.echo("  • Enable billing if not already enabled")
+            click.echo("  • Check your usage limits")
+        else:
+            click.echo(f"{error_str}\n")
+            click.echo("Troubleshooting:")
+            click.echo("  1. Verify your API key is valid")
+            click.echo("  2. Check you have credits/billing enabled")
+            click.echo("  3. Ensure the model name is correct")
+            click.echo("  4. Try a different model")
+            click.echo()
+            if click.confirm("Would you like to reconfigure?", default=False):
+                for key in ["HEAL_PROVIDER", "HEAL_API_KEY", "HEAL_MODEL", "HEAL_BASE_URL"]:
+                    os.environ.pop(key, None)
+                ensure_config()
+                click.echo("\n✅ Reconfigured! Try running 'heal test' again.")
+        
+        click.echo("─" * 60)
 
 
 @main.command()

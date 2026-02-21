@@ -1,3 +1,22 @@
+## [0.1.17] - 2026-02-21
+
+### Summary
+
+feat(docs): CLI interface improvements
+
+### Docs
+
+- docs: update troubleshooting.md
+
+### Test
+
+- update tests/test_main.py
+
+### Other
+
+- update heal/cli.py
+
+
 ## [0.1.16] - 2026-02-21
 
 ### Summary
@@ -83,9 +102,12 @@ refactor(docs): CLI interface improvements
 
 ### Fixed
 
+- **OpenRouter authentication** - fixed API key passing to litellm (now passes both env var and explicit api_key parameter)
+- **Interactive error recovery** - `heal test` now offers to reconfigure on authentication errors
 - **OpenRouter model compatibility** - automatically adds `openrouter/` prefix for litellm
 - **Google Gemini support** - automatically adds `gemini/` prefix when needed
 - Model format handling across different providers
+- Better error messages with specific troubleshooting for auth, rate limit, and quota errors
 
 ### Documentation
 
