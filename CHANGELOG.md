@@ -1,3 +1,33 @@
+## [0.1.2] - 2026-02-21
+
+### Summary
+
+refactor(tests): CLI interface improvements
+
+### Test
+
+- update tests/__init__.py
+- update tests/test_cli.py
+- update tests/test_main.py
+
+### Build
+
+- update pyproject.toml
+
+### Ci
+
+- config: update publish.yml
+
+### Config
+
+- config: update goal.yaml
+
+### Other
+
+- build: update Makefile
+- update pytest.ini
+
+
 ## [0.1.1] - 2026-02-21
 
 ### Summary
