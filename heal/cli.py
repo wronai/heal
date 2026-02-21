@@ -21,6 +21,7 @@ PROVIDERS = {
         "name": "OpenRouter",
         "api_key_url": "https://openrouter.ai/keys",
         "base_url": "https://openrouter.ai/api/v1",
+        "litellm_prefix": "openrouter/",  # Prefix for litellm
         "models": [
             ("openai/gpt-4o-mini", "GPT-4o Mini (fast, cheap, recommended)"),
             ("openai/gpt-4o", "GPT-4o (most capable)"),
@@ -28,12 +29,14 @@ PROVIDERS = {
             ("google/gemini-pro-1.5", "Gemini Pro 1.5 (long context)"),
             ("meta-llama/llama-3.1-70b-instruct", "Llama 3.1 70B (open source)"),
             ("qwen/qwen-2.5-72b-instruct", "Qwen 2.5 72B (multilingual)"),
+            ("arcee-ai/trinity-large-preview:free", "Trinity Large (free, fast)"),
         ]
     },
     "openai": {
         "name": "OpenAI",
         "api_key_url": "https://platform.openai.com/api-keys",
         "base_url": None,
+        "litellm_prefix": None,  # No prefix needed for OpenAI
         "models": [
             ("gpt-4o-mini", "GPT-4o Mini (fast, cheap, recommended)"),
             ("gpt-4o", "GPT-4o (most capable)"),
@@ -45,6 +48,7 @@ PROVIDERS = {
         "name": "Anthropic",
         "api_key_url": "https://console.anthropic.com/settings/keys",
         "base_url": None,
+        "litellm_prefix": None,  # No prefix needed for Anthropic
         "models": [
             ("claude-3-5-sonnet-20241022", "Claude 3.5 Sonnet (recommended)"),
             ("claude-3-opus-20240229", "Claude 3 Opus (most capable)"),
@@ -55,12 +59,26 @@ PROVIDERS = {
         "name": "Google AI",
         "api_key_url": "https://aistudio.google.com/app/apikey",
         "base_url": None,
+        "litellm_prefix": "gemini/",  # Prefix for Google models
         "models": [
             ("gemini-pro", "Gemini Pro (recommended)"),
             ("gemini-pro-vision", "Gemini Pro Vision (multimodal)"),
         ]
     },
 }
+
+
+def get_litellm_model_name(provider, model):
+    """Convert model name to litellm format with provider prefix if needed."""
+    provider_info = PROVIDERS.get(provider, {})
+    prefix = provider_info.get("litellm_prefix")
+    
+    if prefix:
+        # Check if model already has the prefix
+        if not model.startswith(prefix):
+            return f"{prefix}{model}"
+    
+    return model
 
 
 def ensure_config():
@@ -192,6 +210,9 @@ def call_llm(model, api_key, prompt):
     provider = os.getenv("HEAL_PROVIDER", "openrouter")
     base_url = os.getenv("HEAL_BASE_URL")
     
+    # Format model name with provider prefix for litellm
+    litellm_model = get_litellm_model_name(provider, model)
+    
     # Set API key based on provider
     if provider == "openrouter":
         os.environ["OPENROUTER_API_KEY"] = api_key
@@ -204,7 +225,7 @@ def call_llm(model, api_key, prompt):
 
     try:
         kwargs = {
-            "model": model,
+            "model": litellm_model,
             "messages": [{"role": "user", "content": prompt}],
             "temperature": 0.2,
         }
@@ -292,8 +313,12 @@ def test():
         return
     
     provider_info = PROVIDERS.get(provider, PROVIDERS["openrouter"])
+    litellm_model = get_litellm_model_name(provider, model)
+    
     click.echo(f"✓ Provider: {provider_info['name']}")
     click.echo(f"✓ Model: {model}")
+    if litellm_model != model:
+        click.echo(f"  (litellm format: {litellm_model})")
     click.echo(f"✓ API Key: {'*' * 20}{api_key[-4:]}")
     click.echo()
     

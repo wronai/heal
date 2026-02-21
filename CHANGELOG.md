@@ -1,3 +1,22 @@
+## [0.1.16] - 2026-02-21
+
+### Summary
+
+feat(docs): CLI interface improvements
+
+### Docs
+
+- docs: update multi_provider_usage.md
+
+### Test
+
+- update tests/test_main.py
+
+### Other
+
+- update heal/cli.py
+
+
 ## [0.1.15] - 2026-02-21
 
 ### Summary
@@ -31,12 +50,15 @@ refactor(docs): CLI interface improvements
 
 ### Added
 
+- **Automatic provider prefix handling** for litellm compatibility
+- **Multi-provider model support** - easily switch between OpenRouter, OpenAI, Anthropic, Google models
 - **`heal test` command** to verify configuration with simulated error
 - **`heal init` command** for automatic bash integration setup
 - **Automatic command and output capture** via bash buffer system
 - **Helper commands**: `heal-last` (show last command), `heal-output` (show last output)
 - **Auto-install to ~/.bashrc** with confirmation prompt
 - **Exit code tracking** for better error context
+- Trinity Large model added to OpenRouter options (free tier)
 - **Interactive provider selection** with OpenRouter as default (recommended)
 - **Numbered model selection menus** for easy configuration
 - **Direct API key links** for each provider (OpenRouter, OpenAI, Anthropic, Google AI)
@@ -59,6 +81,12 @@ refactor(docs): CLI interface improvements
 - Improved feature descriptions and quick start guide
 - Provider-specific API key handling for better compatibility
 
+### Fixed
+
+- **OpenRouter model compatibility** - automatically adds `openrouter/` prefix for litellm
+- **Google Gemini support** - automatically adds `gemini/` prefix when needed
+- Model format handling across different providers
+
 ### Documentation
 
 - Added interactive configuration flow examples
@@ -68,6 +96,7 @@ refactor(docs): CLI interface improvements
 - Added supported models documentation
 - Improved quick start instructions
 - Created comprehensive examples directory
+- Added getting started guide with step-by-step setup
 
 ## [0.1.14] - 2026-02-21
 
