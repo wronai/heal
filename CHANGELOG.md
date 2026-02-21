@@ -1,3 +1,19 @@
+## [0.1.3] - 2026-02-21
+
+### Summary
+
+feat(tests): CLI interface improvements
+
+### Test
+
+- update tests/test_cli.py
+- update tests/test_main.py
+
+### Build
+
+- update pyproject.toml
+
+
 ## [0.1.2] - 2026-02-21
 
 ### Summary

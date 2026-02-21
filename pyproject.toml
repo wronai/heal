@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "heal"
-version = "0.1.2"
+version = "0.1.3"
 description = "A Python package for healing and wellness"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -17,6 +17,17 @@ dependencies = [
     "python-dotenv>=1.0.0",
     "click>=8.0.0",
 ]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+keywords = ["health", "wellness", "healing", "llm", "shell", "fix"]
 
 [project.optional-dependencies]
 dev = [
@@ -29,17 +40,6 @@ dev = [
     "build>=0.10.0",
     "twine>=4.0.0",
 ]
-classifiers = [
-    "Development Status :: 3 - Alpha",
-    "Intended Audience :: Developers",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-]
-keywords = ["health", "wellness", "healing", "llm", "shell", "fix"]
 
 [project.scripts]
 heal = "heal.cli:main"

@@ -2,6 +2,7 @@
 Tests for heal.cli module.
 """
 
+import os
 import pytest
 from unittest.mock import patch, MagicMock
 from click.testing import CliRunner
@@ -22,7 +23,8 @@ def test_fix_command_no_input():
     with patch('heal.cli.ensure_config'), \
          patch('heal.cli.last_shell_command', return_value=''), \
          patch('heal.cli.read_stdin', return_value=''), \
-         patch('heal.cli.get_last_output', return_value=''):
+         patch('heal.cli.get_last_output', return_value=''), \
+         patch.dict(os.environ, {'HEAL_MODEL': 'gpt-4o-mini', 'HEAL_API_KEY': 'test-key'}):
         
         result = runner.invoke(main, ['fix'])
         assert result.exit_code == 0
@@ -41,7 +43,8 @@ def test_fix_command_with_input(mock_llm, mock_stdin, mock_cmd, mock_config):
     mock_llm.return_value = 'Try running: make clean && make dev'
     
     runner = CliRunner()
-    result = runner.invoke(main, ['fix'])
+    with patch.dict(os.environ, {'HEAL_MODEL': 'gpt-4o-mini', 'HEAL_API_KEY': 'test-key'}):
+        result = runner.invoke(main, ['fix'])
     
     assert result.exit_code == 0
     assert 'Try running: make clean && make dev' in result.output
@@ -78,5 +81,7 @@ def test_last_shell_command():
 
 def test_read_stdin():
     """Test read_stdin function."""
-    result = read_stdin()
-    assert isinstance(result, str)
+    with patch('sys.stdin.isatty', return_value=True):
+        result = read_stdin()
+        assert isinstance(result, str)
+        assert result == ""

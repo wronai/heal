@@ -18,7 +18,7 @@ def test_get_version():
     """Test get_version function."""
     result = get_version()
     assert isinstance(result, str)
-    assert result == "0.1.1"
+    assert result == "0.1.2"
 
 
 def test_shell_healer_init():
